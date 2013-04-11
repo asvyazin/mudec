@@ -18,7 +18,7 @@ get_subnego([_, _ | Tail]) ->
   Len = length(Tail),
   Option = lists:nth(1, Tail),
   Data = lists:sublist(Tail, 2, Len - 3),
-  {subnego, Option, Data}.
+  {Option, Data}.
 -file("/usr/local/Cellar/erlang/R16B/lib/erlang/lib/parsetools-2.0.9/include/leexinc.hrl", 14).
 
 format_error({illegal,S}) -> ["illegal characters ",io_lib:write_string(S)];
@@ -397,69 +397,69 @@ yystate(S, Ics, Line, Tlen, Action, Alen) ->
 %% {token,Token} | {end_token, Token} | skip_token | {error,String}.
 %% Generated action function.
 
-yyaction(0, TokenLen, YYtcs, _) ->
+yyaction(0, TokenLen, YYtcs, TokenLine) ->
     TokenChars = yypre(YYtcs, TokenLen),
-    yyaction_0(TokenChars);
-yyaction(1, TokenLen, YYtcs, _) ->
+    yyaction_0(TokenChars, TokenLine);
+yyaction(1, TokenLen, YYtcs, TokenLine) ->
     TokenChars = yypre(YYtcs, TokenLen),
-    yyaction_1(TokenChars);
-yyaction(2, TokenLen, YYtcs, _) ->
+    yyaction_1(TokenChars, TokenLine);
+yyaction(2, TokenLen, YYtcs, TokenLine) ->
     TokenChars = yypre(YYtcs, TokenLen),
-    yyaction_2(TokenChars);
-yyaction(3, TokenLen, YYtcs, _) ->
+    yyaction_2(TokenChars, TokenLine);
+yyaction(3, TokenLen, YYtcs, TokenLine) ->
     TokenChars = yypre(YYtcs, TokenLen),
-    yyaction_3(TokenChars);
-yyaction(4, TokenLen, YYtcs, _) ->
+    yyaction_3(TokenChars, TokenLine);
+yyaction(4, TokenLen, YYtcs, TokenLine) ->
     TokenChars = yypre(YYtcs, TokenLen),
-    yyaction_4(TokenChars);
-yyaction(5, _, _, _) ->
-    yyaction_5();
-yyaction(6, TokenLen, YYtcs, _) ->
+    yyaction_4(TokenChars, TokenLine);
+yyaction(5, _, _, TokenLine) ->
+    yyaction_5(TokenLine);
+yyaction(6, TokenLen, YYtcs, TokenLine) ->
     TokenChars = yypre(YYtcs, TokenLen),
-    yyaction_6(TokenChars);
-yyaction(7, TokenLen, YYtcs, _) ->
+    yyaction_6(TokenChars, TokenLine);
+yyaction(7, TokenLen, YYtcs, TokenLine) ->
     TokenChars = yypre(YYtcs, TokenLen),
-    yyaction_7(TokenChars);
+    yyaction_7(TokenChars, TokenLine);
 yyaction(_, _, _, _) -> error.
 
--compile({inline,yyaction_0/1}).
+-compile({inline,yyaction_0/2}).
 -file("src/telnet.xrl", 11).
-yyaction_0(TokenChars) ->
-     { token, { do, lists : nth (3, TokenChars) } } .
+yyaction_0(TokenChars, TokenLine) ->
+     { token, { do, TokenLine, lists : nth (3, TokenChars) } } .
 
--compile({inline,yyaction_1/1}).
+-compile({inline,yyaction_1/2}).
 -file("src/telnet.xrl", 12).
-yyaction_1(TokenChars) ->
-     { token, { dont, lists : nth (3, TokenChars) } } .
+yyaction_1(TokenChars, TokenLine) ->
+     { token, { dont, TokenLine, lists : nth (3, TokenChars) } } .
 
--compile({inline,yyaction_2/1}).
+-compile({inline,yyaction_2/2}).
 -file("src/telnet.xrl", 13).
-yyaction_2(TokenChars) ->
-     { token, { will, lists : nth (3, TokenChars) } } .
+yyaction_2(TokenChars, TokenLine) ->
+     { token, { will, TokenLine, lists : nth (3, TokenChars) } } .
 
--compile({inline,yyaction_3/1}).
+-compile({inline,yyaction_3/2}).
 -file("src/telnet.xrl", 14).
-yyaction_3(TokenChars) ->
-     { token, { wont, lists : nth (3, TokenChars) } } .
+yyaction_3(TokenChars, TokenLine) ->
+     { token, { wont, TokenLine, lists : nth (3, TokenChars) } } .
 
--compile({inline,yyaction_4/1}).
+-compile({inline,yyaction_4/2}).
 -file("src/telnet.xrl", 15).
-yyaction_4(TokenChars) ->
-     { token, get_subnego (TokenChars) } .
+yyaction_4(TokenChars, TokenLine) ->
+     { token, { subnego, TokenLine, get_subnego (TokenChars) } } .
 
--compile({inline,yyaction_5/0}).
+-compile({inline,yyaction_5/1}).
 -file("src/telnet.xrl", 16).
-yyaction_5() ->
-     { token, { char, 255 } } .
+yyaction_5(TokenLine) ->
+     { token, { char, TokenLine, 255 } } .
 
--compile({inline,yyaction_6/1}).
+-compile({inline,yyaction_6/2}).
 -file("src/telnet.xrl", 17).
-yyaction_6(TokenChars) ->
-     { token, { command, lists : nth (2, TokenChars) } } .
+yyaction_6(TokenChars, TokenLine) ->
+     { token, { command, TokenLine, lists : nth (2, TokenChars) } } .
 
--compile({inline,yyaction_7/1}).
+-compile({inline,yyaction_7/2}).
 -file("src/telnet.xrl", 18).
-yyaction_7(TokenChars) ->
-     { token, { char, lists : nth (1, TokenChars) } } .
+yyaction_7(TokenChars, TokenLine) ->
+     { token, { char, TokenLine, lists : nth (1, TokenChars) } } .
 
 -file("/usr/local/Cellar/erlang/R16B/lib/erlang/lib/parsetools-2.0.9/include/leexinc.hrl", 282).

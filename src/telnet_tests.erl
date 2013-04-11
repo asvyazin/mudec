@@ -10,25 +10,25 @@
 -define(SE, $\xf0).
 
 chars_test() ->
-    {ok, [{char, $1}, {char, $2}], _} = telnet:string("12").
+    {ok, [{char, _, $1}, {char, _, $2}], _} = telnet:string("12").
 
 do_test() ->
-    {ok, [{do, $1}], _} = telnet:string([?IAC, ?DO, $1]).
+    {ok, [{do, _, $1}], _} = telnet:string([?IAC, ?DO, $1]).
 
 dont_test() ->
-    {ok, [{dont, $1}], _} = telnet:string([?IAC, ?DONT, $1]).
+    {ok, [{dont, _, $1}], _} = telnet:string([?IAC, ?DONT, $1]).
 
 will_test() ->
-    {ok, [{will, $1}], _} = telnet:string([?IAC, ?WILL, $1]).
+    {ok, [{will, _, $1}], _} = telnet:string([?IAC, ?WILL, $1]).
 
 wont_test() ->
-    {ok, [{wont, $1}], _} = telnet:string([?IAC, ?WONT, $1]).
+    {ok, [{wont, _, $1}], _} = telnet:string([?IAC, ?WONT, $1]).
 
 command_test() ->
-    {ok, [{command, $1}], _} = telnet:string([?IAC, $1]).
+    {ok, [{command, _, $1}], _} = telnet:string([?IAC, $1]).
 
 subnego_test() ->
-    {ok, [{subnego, $1, "23"}], _} = telnet:string([?IAC, ?SB, $1, $2, $3, ?IAC, ?SE]).
+    {ok, [{subnego, _, {$1, "23"}}], _} = telnet:string([?IAC, ?SB, $1, $2, $3, ?IAC, ?SE]).
 
 iaciac_test() ->
-    {ok, [{char, $\xff}, {char, $1}], _} = telnet:string([?IAC, ?IAC, $1]).
+    {ok, [{char, _, $\xff}, {char, _, $1}], _} = telnet:string([?IAC, ?IAC, $1]).
