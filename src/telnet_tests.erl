@@ -32,3 +32,16 @@ subnego_test() ->
 
 iaciac_test() ->
     {ok, [{char, _, $\xff}, {char, _, $1}], _} = telnet_scanner:string([?IAC, ?IAC, $1]).
+
+parser_telnet_test() ->
+    ?assertMatch({ok, [{do, $1}]}, telnet_parser:parse([{do, 1, $1}, {'$end', 1}])),
+    ?assertMatch({ok, [{dont, $1}]}, telnet_parser:parse([{dont, 1, $1}, {'$end', 1}])),
+    ?assertMatch({ok, [{will, $1}]}, telnet_parser:parse([{will, 1, $1}, {'$end', 1}])),
+    ?assertMatch({ok, [{wont, $1}]}, telnet_parser:parse([{wont, 1, $1}, {'$end', 1}])),
+    ?assertMatch({ok, [{subnego, {$1, "23"}}]}, telnet_parser:parse([{subnego, 1, {$1, "23"}}, {'$end', 1}])),
+    ?assertMatch({ok, [{command, $1}]}, telnet_parser:parse([{command, 1, $1}, {'$end', 1}])).
+    
+parser_text_test() ->
+    ?assertMatch({ok, ["12"]}, telnet_parser:parse([{char, 1, $1}, {char, 1, $2}, {'$end', 1}])),
+    ?assertMatch({ok, ["12", {do, $3}]}, telnet_parser:parse([{char, 1, $1}, {char, 1, $2}, {do, 1, $3}, {'$end', 1}])),
+    ?assertMatch({ok, ["12", {do, $3}, "45"]}, telnet_parser:parse([{char, 1, $1}, {char, 1, $2}, {do, 1, $3}, {char, 1, $4}, {char, 1, $5}, {'$end', 1}])).
