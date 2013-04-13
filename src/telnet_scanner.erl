@@ -6,13 +6,13 @@
 %% property of the creator of the scanner and is not covered by that
 %% Copyright.
 
--module(telnet).
+-module(telnet_scanner).
 
 -export([string/1,string/2,token/2,token/3,tokens/2,tokens/3]).
 -export([format_error/1]).
 
 %% User code. This is placed here to allow extra attributes.
--file("src/telnet.xrl", 22).
+-file("src/telnet_scanner.xrl", 22).
 
 get_subnego([_, _ | Tail]) ->
   Len = length(Tail),
@@ -279,7 +279,7 @@ yysuf(List, N) -> lists:nthtail(N, List).
 %% return signal either an unrecognised character or end of current
 %% input.
 
--file("src/telnet.erl", 282).
+-file("src/telnet_scanner.erl", 282).
 yystate() -> 15.
 
 yystate(16, Ics, Line, Tlen, _, _) ->
@@ -423,42 +423,42 @@ yyaction(7, TokenLen, YYtcs, TokenLine) ->
 yyaction(_, _, _, _) -> error.
 
 -compile({inline,yyaction_0/2}).
--file("src/telnet.xrl", 11).
+-file("src/telnet_scanner.xrl", 11).
 yyaction_0(TokenChars, TokenLine) ->
      { token, { do, TokenLine, lists : nth (3, TokenChars) } } .
 
 -compile({inline,yyaction_1/2}).
--file("src/telnet.xrl", 12).
+-file("src/telnet_scanner.xrl", 12).
 yyaction_1(TokenChars, TokenLine) ->
      { token, { dont, TokenLine, lists : nth (3, TokenChars) } } .
 
 -compile({inline,yyaction_2/2}).
--file("src/telnet.xrl", 13).
+-file("src/telnet_scanner.xrl", 13).
 yyaction_2(TokenChars, TokenLine) ->
      { token, { will, TokenLine, lists : nth (3, TokenChars) } } .
 
 -compile({inline,yyaction_3/2}).
--file("src/telnet.xrl", 14).
+-file("src/telnet_scanner.xrl", 14).
 yyaction_3(TokenChars, TokenLine) ->
      { token, { wont, TokenLine, lists : nth (3, TokenChars) } } .
 
 -compile({inline,yyaction_4/2}).
--file("src/telnet.xrl", 15).
+-file("src/telnet_scanner.xrl", 15).
 yyaction_4(TokenChars, TokenLine) ->
      { token, { subnego, TokenLine, get_subnego (TokenChars) } } .
 
 -compile({inline,yyaction_5/1}).
--file("src/telnet.xrl", 16).
+-file("src/telnet_scanner.xrl", 16).
 yyaction_5(TokenLine) ->
      { token, { char, TokenLine, 255 } } .
 
 -compile({inline,yyaction_6/2}).
--file("src/telnet.xrl", 17).
+-file("src/telnet_scanner.xrl", 17).
 yyaction_6(TokenChars, TokenLine) ->
      { token, { command, TokenLine, lists : nth (2, TokenChars) } } .
 
 -compile({inline,yyaction_7/2}).
--file("src/telnet.xrl", 18).
+-file("src/telnet_scanner.xrl", 18).
 yyaction_7(TokenChars, TokenLine) ->
      { token, { char, TokenLine, lists : nth (1, TokenChars) } } .
 
