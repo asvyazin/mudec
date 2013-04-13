@@ -17,7 +17,7 @@ Rules.
 {IAC}{SB}.+{IAC}{SE} : {token, {subnego, TokenLine, get_subnego(TokenChars)}}.
 {IAC}{IAC} : {token, {char, TokenLine, $\xff}}.
 {IAC}. : {token, {command, TokenLine, lists:nth(2, TokenChars)}}.
-. : {token, {char, TokenLine, lists:nth(1, TokenChars)}}.
+[^{IAC}] : {token, {char, TokenLine, lists:nth(1, TokenChars)}}.
 
 Erlang code.
 

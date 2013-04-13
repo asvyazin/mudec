@@ -33,6 +33,12 @@ subnego_test() ->
 iaciac_test() ->
     {ok, [{char, _, $\xff}, {char, _, $1}], _} = telnet_scanner:string([?IAC, ?IAC, $1]).
 
+incomplete_parsing_test() ->
+    {more, Cont0} = telnet_scanner:token([], []),
+    {more, Cont} = telnet_scanner:token(Cont0, [?IAC]),
+    {done, {ok, {char, _, ?IAC}, _}, []} = telnet_scanner:token(Cont, [?IAC]),
+    {done, {ok, {char, _, ?IAC}, _}, [?IAC]} = telnet_scanner:token([], [?IAC, ?IAC, ?IAC]).
+
 parser_telnet_test() ->
     ?assertMatch({ok, [{do, $1}]}, telnet_parser:parse([{do, 1, $1}, {'$end', 1}])),
     ?assertMatch({ok, [{dont, $1}]}, telnet_parser:parse([{dont, 1, $1}, {'$end', 1}])),
