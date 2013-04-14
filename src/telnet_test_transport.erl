@@ -11,7 +11,7 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-    {ok, #state{packets = []}}.
+    {ok, #state{packets = queue:new()}}.
 
 recv(_Sock, 0) ->
     gen_server:call(?MODULE, recv).
@@ -19,8 +19,9 @@ recv(_Sock, 0) ->
 packet(Packet) ->
     gen_server:cast(?MODULE, {packet, Packet}).
 
-handle_call(recv, _From, #state{packets = [P0 | P]} = State) ->
-    {reply, {ok, P0}, State#state{packets = P}}.
+handle_call(recv, _From, #state{packets = Packets} = State) ->
+    {{value, P0}, NewPackets} = queue:out(Packets),
+    {reply, {ok, P0}, State#state{packets = NewPackets}}.
 
 handle_cast({packet, Packet}, #state{packets = Packets}) ->
-    {noreply, #state{packets = [Packet | Packets]}}.
+    {noreply, #state{packets = queue:in(Packet, Packets)}}.
