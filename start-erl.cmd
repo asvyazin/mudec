@@ -1,0 +1,1 @@
+erl -sname mudec -pz ebin -pz deps/lager/ebin
