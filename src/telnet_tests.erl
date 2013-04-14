@@ -54,17 +54,75 @@ parser_text_test() ->
     ?assertMatch({ok, ["12", {do, $3}]}, telnet_parser:parse([{char, 1, $1}, {char, 1, $2}, {do, 1, $3}, {'$end', 1}])),
     ?assertMatch({ok, ["12", {do, $3}, "45"]}, telnet_parser:parse([{char, 1, $1}, {char, 1, $2}, {do, 1, $3}, {char, 1, $4}, {char, 1, $5}, {'$end', 1}])).
 
-telnet_tokenizer_test() ->
+telnet_test_transport_start_and_stop_test() ->
+    ?assertMatch({ok, _}, telnet_test_transport:start_link()),
+    ?assertMatch(ok, telnet_test_transport:stop()),
+    ?assertMatch({ok, _}, telnet_test_transport:start_link()),
+    ?assertMatch(ok, telnet_test_transport:stop()).
+
+telnet_tokenizer_setup() ->
     {ok, _TPid} = telnet_test_transport:start_link(),
     {ok, Pid} = telnet_tokenizer:start_link(0, telnet_test_transport),
-    telnet_test_transport:packet("12"),
-    telnet_test_transport:packet([?IAC, ?DO, $3]),
-    telnet_test_transport:packet([?IAC, ?DONT]),
-    telnet_test_transport:packet("1"),
-    telnet_test_transport:packet([?IAC]),
-    telnet_test_transport:packet([?IAC]),
-    ?assertMatch({ok, [{char, _, $1}, {char, _, $2}], _}, telnet_tokenizer:token(Pid)),
-    ?assertMatch({ok, [{do, _, $3}], _}, telnet_tokenizer:token(Pid)),
-    ?assertMatch({ok, [{dont, _, $1}], _}, telnet_tokenizer:token(Pid)),
-    ?assertMatch({ok, [{char, _, ?IAC}], _}, telnet_tokenizer:token(Pid)).
+    Pid.
 
+telnet_tokenizer_teardown(Pid) ->
+    telnet_tokenizer:stop(Pid),
+    telnet_test_transport:stop().
+
+telnet_tokenizer_test_() ->
+    {setup,
+     fun telnet_tokenizer_setup/0,
+     fun telnet_tokenizer_teardown/1,
+     fun (Pid) ->
+	     [?_test(
+		 begin		     
+		     telnet_test_transport:packet("12"),
+		     ?assertMatch({ok, [{char, _, $1}, {char, _, $2}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
+		 end),
+	      ?_test(
+		 begin
+		     telnet_test_transport:packet([?IAC, ?DO, $3]),
+		     ?assertMatch({ok, [{do, _, $3}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
+		 end),
+	      ?_test(
+		 begin
+		     telnet_test_transport:packet([?IAC, ?DONT]),
+		     telnet_test_transport:packet("1"),		     
+		     ?assertMatch({ok, [{dont, _, $1}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
+		 end),
+	      ?_test(
+		 begin
+		     telnet_test_transport:packet([?IAC]),
+		     telnet_test_transport:packet([?IAC]),
+		     ?assertMatch({ok, [{char, _, ?IAC}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
+		 end)]
+     end}.
+
+telnet_parser_with_tokenizer_test_() ->
+    {setup,
+     fun telnet_tokenizer_setup/0,
+     fun telnet_tokenizer_teardown/1,
+     fun (Pid) ->
+	     [?_test(
+		 begin
+		     telnet_test_transport:packet("12"),
+		     ?assertMatch({ok, ["12"]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))
+		 end),
+	      ?_test(
+		 begin
+		     telnet_test_transport:packet([?IAC, ?DO, $3]),
+		     ?assertMatch({ok, [{do, $3}]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))
+		 end),
+	      ?_test(
+		 begin
+		     telnet_test_transport:packet([?IAC, ?DONT]),
+		     telnet_test_transport:packet("1"),
+		     ?assertMatch({ok, [{dont, $1}]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))
+		 end),
+	      ?_test(
+		 begin
+		     telnet_test_transport:packet([?IAC]),
+		     telnet_test_transport:packet([?IAC]),    
+		     ?assertMatch({ok, ["\xff"]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))		     
+		 end)]
+     end}.

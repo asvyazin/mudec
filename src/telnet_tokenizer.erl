@@ -3,9 +3,9 @@
 
 -behaviour(gen_server).
 
--export([start_link/2, token/1]).
+-export([start_link/2, token/1, stop/1]).
 
--export([init/1, handle_call/3]).
+-export([init/1, handle_call/3, handle_cast/2, terminate/2]).
 
 -record(state, {sock, transport, cont}).
 
@@ -14,6 +14,9 @@ start_link(Sock, Transport) ->
 
 token(Pid) ->
     gen_server:call(Pid, token).
+
+stop(Pid) ->
+    gen_server:cast(Pid, stop).
 
 init([Sock, Transport]) ->
     {ok, #state{sock = Sock, transport = Transport, cont = []}}.
@@ -29,7 +32,7 @@ get_token(Sock, Transport, Buf, Cont) ->
 	    get_token(Sock, Transport, Packet, Cont1);
 	{done, {ok, Token, Line}, Rest} ->
 	    {ok, RestTokens, NewLine, NewCont} = get_rest_tokens(Rest, [], [], Line),
-	    {ok, [Token | RestTokens], NewLine, NewCont}
+	    {ok, [Token | RestTokens] ++ [{'$end', NewLine}], NewLine, NewCont}
     end.
 
 get_rest_tokens(Rest, Cont, RestTokens, Line) ->
@@ -39,3 +42,9 @@ get_rest_tokens(Rest, Cont, RestTokens, Line) ->
 	{done, {ok, Token, NewLine}, NewRest} ->
 	    get_rest_tokens(NewRest, [], [Token | RestTokens], NewLine)
     end.
+
+handle_cast(stop, #state{} = S) ->
+    {stop, normal, S}.
+
+terminate(normal, #state{}) ->
+    ok.
