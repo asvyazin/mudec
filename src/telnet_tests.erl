@@ -1,13 +1,7 @@
 -module(telnet_tests).
 -include_lib("eunit/include/eunit.hrl").
 
--define(IAC, $\xff).
--define(DO, $\xfd).
--define(DONT, $\xfe).
--define(WILL, $\xfb).
--define(WONT, $\xfc).
--define(SB, $\xfa).
--define(SE, $\xf0).
+-include("telnet.hrl").
 
 chars_test() ->
     {ok, [{char, _, $1}, {char, _, $2}], _} = telnet_scanner:string("12").

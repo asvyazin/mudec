@@ -1,0 +1,7 @@
+-define(IAC, $\xff).
+-define(DO, $\xfd).
+-define(DONT, $\xfe).
+-define(WILL, $\xfb).
+-define(WONT, $\xfc).
+-define(SB, $\xfa).
+-define(SE, $\xf0).
