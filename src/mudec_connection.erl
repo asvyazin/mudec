@@ -10,7 +10,7 @@
 -record(state, {event_mgr, sock}).
 
 start_link(Address, Port) ->
-    gen_server:start_link(?MODULE, [], [Address, Port]).
+    gen_server:start_link(?MODULE, [Address, Port], []).
 
 add_handler(Pid, Handler, Args) ->
     ok = gen_server:cast(Pid, {add_handler, Handler, Args}).
@@ -38,6 +38,6 @@ start_read_loop(Address, Port, EventMgrRef) ->
     {ok, Sock}.
 
 read_loop(TokenizerPid, EventMgrRef) ->
-    {ok, Tokens} = telnet_parser:parse_and_scan({telnet_tokenizer, token, TokenizerPid}),
+    {ok, Tokens} = telnet_parser:parse_and_scan({telnet_tokenizer, token, [TokenizerPid]}),
     [gen_event:notify(EventMgrRef, Token) || Token <- Tokens],
     ?MODULE:read_loop(TokenizerPid, EventMgrRef).

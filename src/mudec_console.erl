@@ -19,7 +19,7 @@ token_received(Pid, Token) ->
 
 init([Address, Port]) ->
     {ok, ConnPid} = mudec_connection:start_link(Address, Port),
-    mudec_connection:add_handler(ConnPid, mudec_connection_handler, [self()]),
+    mudec_connection:add_handler(ConnPid, mudec_console_handler, [self()]),
     {ok, #state{connection = ConnPid}}.
 
 handle_cast({send, Message}, #state{connection = Conn} = S) ->

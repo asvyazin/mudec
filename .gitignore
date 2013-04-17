@@ -3,3 +3,5 @@
 ebin/*.app
 .eunit
 deps
+log
+erl_crash.dump
