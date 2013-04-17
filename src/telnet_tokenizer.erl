@@ -9,11 +9,13 @@
 
 -record(state, {sock, transport, cont}).
 
+-define(TOKEN_TIMEOUT, 120000).
+
 start_link(Sock, Transport) ->
     gen_server:start_link(?MODULE, [Sock, Transport], []).
 
 token(Pid) ->
-    gen_server:call(Pid, token).
+    gen_server:call(Pid, token, ?TOKEN_TIMEOUT).
 
 stop(Pid) ->
     gen_server:cast(Pid, stop).
