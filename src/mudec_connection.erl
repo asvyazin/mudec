@@ -4,10 +4,11 @@
 -behaviour(gen_server).
 
 -export([start_link/2, add_handler/3, send/2]).
--export([init/1, handle_cast/2]).
--export([read_loop/2]).
+-export([init/1, handle_cast/2, handle_info/2]).
 
--record(state, {event_mgr, sock}).
+-record(state, {event_mgr, sock, cont}).
+
+-define(SOCK_OPTIONS, [{active, once}, {mode, list}]).
 
 start_link(Address, Port) ->
     gen_server:start_link(?MODULE, [Address, Port], []).
@@ -20,8 +21,8 @@ send(Pid, Packet) ->
 
 init([Address, Port]) ->
     {ok, EventMgrRef} = gen_event:start_link(),
-    {ok, Sock} = start_read_loop(Address, Port, EventMgrRef),
-    {ok, #state{event_mgr = EventMgrRef, sock = Sock}}.
+    {ok, Sock} = gen_tcp:connect(Address, Port, ?SOCK_OPTIONS),
+    {ok, #state{event_mgr = EventMgrRef, sock = Sock, cont = []}}.
 
 handle_cast({add_handler, Handler, Args}, #state{event_mgr = EventMgrRef} = S) ->
     ok = gen_event:add_handler(EventMgrRef, Handler, Args),
@@ -30,14 +31,20 @@ handle_cast({send, Packet}, #state{sock = Sock} = S) ->
     ok = gen_tcp:send(Sock, Packet),
     {noreply, S}.
 
-start_read_loop(Address, Port, EventMgrRef) ->
-    {ok, Sock} = gen_tcp:connect(Address, Port, [{active, false}, {mode, list}]),
-    {ok, TokenizerPid} = telnet_tokenizer:start_link(Sock, gen_tcp),
-    ok = gen_tcp:controlling_process(Sock, TokenizerPid),
-    spawn_link(?MODULE, read_loop, [TokenizerPid, EventMgrRef]),
-    {ok, Sock}.
+handle_info({tcp, _Sock, Data}, #state{sock = Sock, cont = Cont, event_mgr = EventMgrRef} = S) ->
+    {ok, Tokens, NewCont, Line} = get_tokens(Data, Cont),
+    {ok, ParsedTokens} = telnet_parser:parse(Tokens ++ [{'$end', Line}]),
+    [gen_event:notify(EventMgrRef, Token) || Token <- ParsedTokens],
+    inet:setopts(Sock, ?SOCK_OPTIONS),
+    {noreply, S#state{cont = NewCont}}.
 
-read_loop(TokenizerPid, EventMgrRef) ->
-    {ok, Tokens} = telnet_parser:parse_and_scan({telnet_tokenizer, token, [TokenizerPid]}),
-    [gen_event:notify(EventMgrRef, Token) || Token <- Tokens],
-    ?MODULE:read_loop(TokenizerPid, EventMgrRef).
+get_tokens(Data, Cont) ->
+    get_tokens(Data, Cont, [], 1).
+
+get_tokens(Data, Cont, Res, Line) ->
+    case telnet_scanner:token(Cont, Data) of
+	{more, Cont1} ->
+	    {ok, lists:reverse(Res), Cont1, Line};
+	{done, {ok, Token, NewLine}, Rest} ->
+	    get_tokens(Rest, [], [Token | Res], NewLine)
+    end.
