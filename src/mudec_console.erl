@@ -26,7 +26,7 @@ init([Address, Port]) ->
     {ok, #state{connection = ConnPid}}.
 
 handle_cast({send, Message}, #state{connection = Conn} = S) ->
-    mudec_connection:send(Conn, Message),
+    mudec_connection:send(Conn, [Message, "\r\n"]),
     {noreply, S};
 handle_cast({token, Token}, #state{} = S) ->
     io:format("~p~n", [Token]),

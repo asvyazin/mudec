@@ -28,7 +28,7 @@ handle_cast({add_handler, Handler, Args}, #state{event_mgr = EventMgrRef} = S) -
     ok = gen_event:add_handler(EventMgrRef, Handler, Args),
     {noreply, S};
 handle_cast({send, Packet}, #state{sock = Sock} = S) ->
-    ok = gen_tcp:send(Sock, Packet),
+    ok = gen_tcp:send(Sock, telnet_writer:to_telnet(Packet)),
     {noreply, S}.
 
 handle_info({tcp, _Sock, Data}, #state{sock = Sock, cont = Cont, event_mgr = EventMgrRef} = S) ->
