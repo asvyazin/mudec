@@ -4,7 +4,7 @@
 -behaviour(gen_server).
 
 -export([start_link/2, add_handler/3, send/2]).
--export([init/1, handle_cast/2, handle_info/2]).
+-export([init/1, handle_cast/2, handle_info/2, terminate/2]).
 
 -record(state, {event_mgr, sock, cont}).
 
@@ -34,9 +34,15 @@ handle_cast({send, Packet}, #state{sock = Sock} = S) ->
 handle_info({tcp, _Sock, Data}, #state{sock = Sock, cont = Cont, event_mgr = EventMgrRef} = S) ->
     {ok, Tokens, NewCont, Line} = get_tokens(Data, Cont),
     {ok, ParsedTokens} = telnet_parser:parse(Tokens ++ [{'$end', Line}]),
-    [gen_event:notify(EventMgrRef, Token) || Token <- ParsedTokens],
+    [gen_event:notify(EventMgrRef, {token, Token}) || Token <- ParsedTokens],
     inet:setopts(Sock, ?SOCK_OPTIONS),
-    {noreply, S#state{cont = NewCont}}.
+    {noreply, S#state{cont = NewCont}};
+handle_info({tcp_closed, _Sock}, #state{} = S) ->
+    {stop, normal, S}.
+
+terminate(normal, #state{event_mgr = EventMgrRef}) ->
+    gen_event:notify(EventMgrRef, connection_closed),
+    ok.
 
 get_tokens(Data, Cont) ->
     get_tokens(Data, Cont, [], 1).

@@ -3,8 +3,8 @@
 
 -behaviour(gen_server).
 
--export([start_link/2, send/2, token_received/2]).
--export([init/1, handle_cast/2]).
+-export([start_link/2, send/2, token_received/2, stop/1]).
+-export([init/1, handle_cast/2, terminate/2]).
 
 -record(state, {connection}).
 
@@ -17,6 +17,9 @@ send(Pid, Message) ->
 token_received(Pid, Token) ->
     gen_server:cast(Pid, {token, Token}).
 
+stop(Pid) ->
+    gen_server:cast(Pid, stop).
+
 init([Address, Port]) ->
     {ok, ConnPid} = mudec_connection:start_link(Address, Port),
     mudec_connection:add_handler(ConnPid, mudec_console_handler, [self()]),
@@ -27,4 +30,9 @@ handle_cast({send, Message}, #state{connection = Conn} = S) ->
     {noreply, S};
 handle_cast({token, Token}, #state{} = S) ->
     io:format("~p~n", [Token]),
-    {noreply, S}.
+    {noreply, S};
+handle_cast(stop, #state{} = S) ->
+    {stop, normal, S}.
+
+terminate(normal, #state{}) ->
+    ok.
