@@ -42,6 +42,15 @@ handle_cast ({token, {wont, 1}}, #state{} = S) ->
 handle_cast({token, {wont, Option}}, #state{} = S) ->
 	io:format("Unknown WONT: ~p~n", [Option]),
 	{noreply, S};
+handle_cast ({token, {do, Option}}, #state{} = S) ->
+	io:format("Unknown DO: ~p~n", [Option]),
+	{noreply, S};
+handle_cast ({token, {dont, Option}}, #state{} = S) ->
+	io:format("Unknown DONT: ~p~n", [Option]),
+	{noreply, S};
+handle_cast ({token, {subnego, Option, Data}}, #state{} = S) ->
+	io:format("Unknown SUBNEGO: ~p, ~p~n", [Option, Data]),
+	{noreply, S};
 handle_cast({token, Token}, #state{} = S) ->
     io:format("~s~n", [Token]),
     {noreply, S};
