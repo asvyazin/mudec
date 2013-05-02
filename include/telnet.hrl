@@ -5,3 +5,4 @@
 -define(WONT, $\xfc).
 -define(SB, $\xfa).
 -define(SE, $\xf0).
+-define(AYT, $\xf6).
