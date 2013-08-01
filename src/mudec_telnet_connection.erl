@@ -22,7 +22,7 @@ init([Address, Port]) ->
 
 -spec read_tokens(pid()) -> {ok, list(mudec_telnet_reader:telnet_token())}.
 read_tokens(Pid) ->
-    gen_server:call(Pid, read_tokens, infinite).
+    gen_server:call(Pid, read_tokens, infinity).
 
 -spec set_mode(pid(), telnet_packet:mode()) -> ok.
 set_mode(Pid, Mode) ->
