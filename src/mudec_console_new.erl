@@ -14,6 +14,8 @@ read_network_loop(Pid) ->
     [print_token(Token) || Token <- Tokens],
     ?MODULE:read_network_loop(Pid).
 
+print_token(Token) when is_list(Token) ->
+    io:format("~s~n", [Token]);
 print_token(Token) ->
     io:format("~p~n", [Token]).
 
