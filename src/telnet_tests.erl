@@ -48,77 +48,29 @@ parser_text_test() ->
     ?assertMatch({ok, ["12", {do, $3}]}, telnet_parser:parse([{char, 1, $1}, {char, 1, $2}, {do, 1, $3}, {'$end', 1}])),
     ?assertMatch({ok, ["12", {do, $3}, "45"]}, telnet_parser:parse([{char, 1, $1}, {char, 1, $2}, {do, 1, $3}, {char, 1, $4}, {char, 1, $5}, {'$end', 1}])).
 
-telnet_test_transport_start_and_stop_test() ->
-    ?assertMatch({ok, _}, telnet_test_transport:start_link()),
-    ?assertMatch(ok, telnet_test_transport:stop()),
-    ?assertMatch({ok, _}, telnet_test_transport:start_link()),
-    ?assertMatch(ok, telnet_test_transport:stop()).
+telnet_packet_test_() ->
+    [?_assertMatch({ok, "123\r\n", "456"}, telnet_packet:read(undefinite, "123\r\n456", newline)),
+     ?_assertMatch({ok, "1", "2"}, telnet_packet:read(undefinite, [$1, ?IAC, ?EOR, $2], eor)),
+     ?_assertMatch({ok, "1", "2"}, telnet_packet:read(undefinite, [$1, ?IAC, ?GA, $2], ga)),
+     ?_assertMatch({ok, "1\r\n", "2"}, telnet_packet:read(undefinite, [$1, $\r, $\n, ?IAC, ?EOR, $2], eor)),
+     ?_assertMatch({ok, "1\r\n", "2"}, telnet_packet:read(undefinite, [$1, $\r, $\n, ?IAC, ?GA, $2], ga)),
+     ?_assertMatch({ok, [$1, $\r, $\n, ?IAC, ?EOR], "2"}, telnet_packet:read(undefinite, [$1, $\r, $\n, ?IAC, ?EOR, ?IAC, ?GA, $2], ga)),
+     ?_assertMatch({ok, [$1, $\r, $\n, ?IAC, ?GA], "2"}, telnet_packet:read(undefinite, [$1, $\r, $\n, ?IAC, ?GA, ?IAC, ?EOR, $2], eor)),
+     ?_assertMatch({ok, [$1, ?IAC, ?EOR, ?IAC, ?GA, $\r, $\n], "2"}, telnet_packet:read(undefinite, [$1, ?IAC, ?EOR, ?IAC, ?GA, $\r, $\n, $2], newline))].
 
-telnet_tokenizer_setup() ->
-    {ok, _TPid} = telnet_test_transport:start_link(),
-    {ok, Pid} = telnet_tokenizer:start_link(0, telnet_test_transport),
-    Pid.
-
-telnet_tokenizer_teardown(Pid) ->
-    telnet_tokenizer:stop(Pid),
-    telnet_test_transport:stop().
-
-telnet_tokenizer_test_() ->
+telnet_packet_sock_recv_test_() ->
     {setup,
-     fun telnet_tokenizer_setup/0,
-     fun telnet_tokenizer_teardown/1,
-     fun (Pid) ->
-	     [?_test(
-		 begin		     
-		     telnet_test_transport:packet("12"),
-		     ?assertMatch({ok, [{char, _, $1}, {char, _, $2}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
-		 end),
-	      ?_test(
-		 begin
-		     telnet_test_transport:packet([?IAC, ?DO, $3]),
-		     ?assertMatch({ok, [{do, _, $3}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
-		 end),
-	      ?_test(
-		 begin
-		     telnet_test_transport:packet([?IAC, ?DONT]),
-		     telnet_test_transport:packet("1"),		     
-		     ?assertMatch({ok, [{dont, _, $1}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
-		 end),
-	      ?_test(
-		 begin
-		     telnet_test_transport:packet([?IAC]),
-		     telnet_test_transport:packet([?IAC]),
-		     ?assertMatch({ok, [{char, _, ?IAC}, {'$end', _}], _}, telnet_tokenizer:token(Pid))
-		 end)]
-     end}.
-
-telnet_parser_with_tokenizer_test_() ->
-    {setup,
-     fun telnet_tokenizer_setup/0,
-     fun telnet_tokenizer_teardown/1,
-     fun (Pid) ->
-	     [?_test(
-		 begin
-		     telnet_test_transport:packet("12"),
-		     ?assertMatch({ok, ["12"]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))
-		 end),
-	      ?_test(
-		 begin
-		     telnet_test_transport:packet([?IAC, ?DO, $3]),
-		     ?assertMatch({ok, [{do, $3}]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))
-		 end),
-	      ?_test(
-		 begin
-		     telnet_test_transport:packet([?IAC, ?DONT]),
-		     telnet_test_transport:packet("1"),
-		     ?assertMatch({ok, [{dont, $1}]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))
-		 end),
-	      ?_test(
-		 begin
-		     telnet_test_transport:packet([?IAC]),
-		     telnet_test_transport:packet([?IAC]),    
-		     ?assertMatch({ok, ["\xff"]}, telnet_parser:parse_and_scan({telnet_tokenizer, token, [Pid]}))		     
-		 end)]
+     fun () ->
+	     meck:new(gen_tcp, [unstick]),
+	     meck:expect(gen_tcp, recv, 2, meck:seq([meck:val({ok, [$4, ?IAC, ?EOR]}), meck:val({ok, [$5, ?IAC, ?GA]}), meck:val({ok, "6\r\n789"})]))
+     end,
+     fun (_) -> meck:unload(gen_tcp) end,
+     fun (_) ->
+	     ?_test(
+		begin
+		    ?assertMatch({ok, [$1, $2, $3, $4, ?IAC, ?EOR, $5, ?IAC, ?GA, $6, $\r, $\n], "789"}, telnet_packet:read(undefinite, "123", newline)),
+		    meck:validate(gen_tcp)
+		end)
      end}.
 
 telnet_writer_test_() ->

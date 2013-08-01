@@ -6,3 +6,5 @@
 -define(SB, $\xfa).
 -define(SE, $\xf0).
 -define(AYT, $\xf6).
+-define(EOR, 239).
+-define(GA, 249).

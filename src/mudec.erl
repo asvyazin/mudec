@@ -1,7 +1,10 @@
 -module (mudec).
 -author('Alexander Svyazin <guybrush@live.ru>').
 
--export ([the_bat/0]).
+-export ([the_bat/0, materiamagica/0]).
 
 the_bat() ->
-	{ok, _Pid} = mudec_console:start_link("bat.org", 23).
+    mudec_console_new:connect("bat.org", 23).
+
+materiamagica() ->
+    mudec_console_new:connect("materiamagica.com", 23).

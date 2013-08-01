@@ -1,12 +1,11 @@
 {application, mudec,
  [
   {description, ""},
-  {vsn, "1"},
+  {vsn, git},
   {registered, []},
   {applications, [
                   kernel,
                   stdlib
                  ]},
-  {mod, { mudec_app, []}},
   {env, []}
  ]}.
