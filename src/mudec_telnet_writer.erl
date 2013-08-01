@@ -1,4 +1,4 @@
--module(telnet_writer).
+-module(mudec_telnet_writer).
 -author('Alexander Svyazin <guybrush@live.ru>').
 
 -include("telnet.hrl").

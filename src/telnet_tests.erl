@@ -74,12 +74,12 @@ telnet_packet_sock_recv_test_() ->
      end}.
 
 telnet_writer_test_() ->
-    [?_assertMatch("12", telnet_writer:to_telnet("12")),
-     ?_assertMatch([[?IAC, ?IAC], $1], telnet_writer:to_telnet([?IAC, $1])),
-     ?_assertMatch([?IAC, ?DO, $1], telnet_writer:to_telnet({do, $1})),
-     ?_assertMatch([?IAC, ?DONT, $1], telnet_writer:to_telnet({dont, $1})),
-     ?_assertMatch([?IAC, ?WILL, $1], telnet_writer:to_telnet({will, $1})),
-     ?_assertMatch([?IAC, ?WONT, $1], telnet_writer:to_telnet({wont, $1})),
-     ?_assertMatch([?IAC, $1], telnet_writer:to_telnet({command, $1})),
+    [?_assertMatch("12", mudec_telnet_writer:to_telnet("12")),
+     ?_assertMatch([[?IAC, ?IAC], $1], mudec_telnet_writer:to_telnet([?IAC, $1])),
+     ?_assertMatch([?IAC, ?DO, $1], mudec_telnet_writer:to_telnet({do, $1})),
+     ?_assertMatch([?IAC, ?DONT, $1], mudec_telnet_writer:to_telnet({dont, $1})),
+     ?_assertMatch([?IAC, ?WILL, $1], mudec_telnet_writer:to_telnet({will, $1})),
+     ?_assertMatch([?IAC, ?WONT, $1], mudec_telnet_writer:to_telnet({wont, $1})),
+     ?_assertMatch([?IAC, $1], mudec_telnet_writer:to_telnet({command, $1})),
      ?_assertMatch([[?IAC, $1], [?IAC, ?DO, $2], [?IAC, ?DONT, $3], [?IAC, ?WILL, $4], [?IAC, ?WONT, $5], [?IAC, ?SB, $6, "78", ?IAC, ?SE], "90"],
-		   telnet_writer:to_telnet([{command, $1}, {do, $2}, {dont, $3}, {will, $4}, {wont, $5}, {subnego, $6, "78"}, "90"]))].
+		   mudec_telnet_writer:to_telnet([{command, $1}, {do, $2}, {dont, $3}, {will, $4}, {wont, $5}, {subnego, $6, "78"}, "90"]))].
