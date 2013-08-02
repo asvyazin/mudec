@@ -11,12 +11,18 @@ connect(Address, Port) ->
 -spec read_network_loop(pid()) -> any().
 read_network_loop(Pid) ->
     {ok, Tokens} = mudec_telnet_connection:read_tokens(Pid),
-    [print_token(Token) || Token <- Tokens],
+    [process_token(Pid, Token) || Token <- Tokens],
     ?MODULE:read_network_loop(Pid).
 
-print_token(Token) when is_list(Token) ->
+process_token(Pid, {will, Option}) ->
+    io:format("server sent unknown WILL: ~p~n", [Option]),
+    mudec_telnet_connection:send(Pid, {dont, Option});
+process_token(Pid, {do, Option}) ->
+    io:format("server sent unknown DO: ~p~n", [Option]),
+    mudec_telnet_connection:send(Pid, {wont, Option});
+process_token(_, Token) when is_list(Token) ->
     io:format("~s~n", [Token]);
-print_token(Token) ->
+process_token(_, Token) ->
     io:format("~p~n", [Token]).
 
 -spec read_input_loop(pid()) -> any().
