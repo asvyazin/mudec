@@ -47,14 +47,23 @@ get_mode(Pid) ->
 send(Pid, Tokens) ->
     gen_server:cast(Pid, {send, Tokens}).
 
-handle_call(read_tokens, _Reply, #state{socket = Socket, buffer = Buffer, mode = Mode} = S) ->
-    {ok, Tokens, NewBuffer} = mudec_telnet_reader:read_tokens(Socket, Buffer, Mode),
-    {reply, {ok, Tokens}, S#state{buffer = NewBuffer}};
+handle_call(read_tokens, From, #state{socket = Socket, buffer = Buffer, mode = Mode} = S) ->
+    Pid = self(),
+    spawn_link(fun () ->
+		       {ok, Tokens, NewBuffer} = mudec_telnet_reader:read_tokens(Socket, Buffer, Mode),
+		       gen_server:cast(Pid, {read_tokens_reply, From, Tokens, NewBuffer})
+	       end),
+    {noreply, S};
 handle_call(get_mode, _Reply, #state{mode = Mode} = S) ->
     {reply, {ok, Mode}, S}.
 
 handle_cast({set_mode, Mode}, #state{} = S) ->
     {noreply, S#state{mode = Mode}};
 handle_cast({send, Tokens}, #state{socket = Socket} = S) ->
-    gen_tcp:send(Socket, mudec_telnet_writer:to_telnet(Tokens)),
-    {noreply, S}.
+%    io:format("will send ~p~n", [Tokens]),
+    ok = gen_tcp:send(Socket, mudec_telnet_writer:to_telnet(Tokens)),
+    {noreply, S};
+handle_cast({read_tokens_reply, From, Tokens, NewBuffer}, #state{} = S) ->
+    gen_server:reply(From, {ok, Tokens}),
+    {noreply, S#state{buffer = NewBuffer}}.
+

@@ -26,13 +26,18 @@ readUpTo(Sock, Data, Pattern, SkipPattern) ->
 	N ->
 	    Left = string:substr(Data, 1, N - 1),
 	    Right = string:substr(Data, N + length(Pattern)),
-	    Packet = case SkipPattern of
-			 true ->
-			     Left;
-			 _ ->
-			     Left ++ Pattern
-		     end,
-	    {ok, Packet, Right}
+	    case Left of
+		[] ->
+		    recvAndReadUpTo(Sock, Right, Pattern, SkipPattern);
+		_ ->
+		    Packet = case SkipPattern of
+				 true ->
+				     Left;
+				 _ ->
+				     Left ++ Pattern
+			     end,
+		    {ok, Packet, Right}
+	    end
     end.
 
 recvAndReadUpTo(Sock, Data, Pattern, SkipPattern) ->

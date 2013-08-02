@@ -8,3 +8,6 @@
 -define(AYT, $\xf6).
 -define(EOR, 239).
 -define(GA, 249).
+
+-define(SUPPRESS_GO_AHEAD, 3).
+-define(END_OF_RECORD, 25).
