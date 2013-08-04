@@ -58,6 +58,7 @@ handle_call(get_mode, _Reply, #state{mode = Mode} = S) ->
     {reply, {ok, Mode}, S}.
 
 handle_cast({set_mode, Mode}, #state{} = S) ->
+    io:format("setting telnet mode to ~p~n", [Mode]),
     {noreply, S#state{mode = Mode}};
 handle_cast({send, Tokens}, #state{socket = Socket} = S) ->
 %    io:format("will send ~p~n", [Tokens]),
@@ -66,4 +67,3 @@ handle_cast({send, Tokens}, #state{socket = Socket} = S) ->
 handle_cast({read_tokens_reply, From, Tokens, NewBuffer}, #state{} = S) ->
     gen_server:reply(From, {ok, Tokens}),
     {noreply, S#state{buffer = NewBuffer}}.
-
