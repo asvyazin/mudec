@@ -10,4 +10,13 @@
 -define(GA, 249).
 
 -define(SUPPRESS_GO_AHEAD, 3).
+-define(TERMINAL_TYPE, 24).
 -define(END_OF_RECORD, 25).
+-define(NAWS, 31).
+-define(NEW_ENVIRON, 39).
+-define(CHARSET, 42).
+-define(TELOPT_MSSP, 70).
+-define(TELOPT_MCCP, 86).
+-define(TELOPT_MSP, 90).
+-define(TELOPT_MXP, 91).
+-define(TELOPT_GMCP, 201).
