@@ -1,7 +1,7 @@
 -module (mudec).
 -author('Alexander Svyazin <guybrush@live.ru>').
 
--export ([the_bat/0, materiamagica/0]).
+-export ([the_bat/0, materiamagica/0, burning/0]).
 
 start() ->
     lager:start(),
@@ -14,3 +14,7 @@ the_bat() ->
 materiamagica() ->
     start(),
     mudec_console_new:connect("materiamagica.com", 23).
+
+burning() ->
+    start(),
+    mudec_console_new:connect("burningmud.com", 4000).
