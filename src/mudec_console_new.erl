@@ -23,7 +23,7 @@ process_token(Pid, {will, Option}) ->
 process_token(Pid, {do, Option}) ->
     mudec_telnet_connection:send(Pid, {do(Option), Option});
 process_token(Pid, {command, ?EOR}) ->
-    lager:info("First EOR reveived, enabling EOR mode..."),
+    lager:info("First EOR received, enabling EOR mode..."),
     mudec_telnet_connection:set_mode(Pid, eor);
 process_token(Pid, {command, ?GA}) ->
     lager:info("GA received, enabling GA mode..."),
