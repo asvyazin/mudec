@@ -41,5 +41,5 @@ readUpTo(Sock, Data, Pattern, SkipPattern) ->
     end.
 
 recvAndReadUpTo(Sock, Data, Pattern, SkipPattern) ->
-    {ok, MoreData} = gen_tcp:recv(Sock, 0),
+    {ok, MoreData} = tcp_network_proxy:read_bytes(Sock),
     readUpTo(Sock, Data ++ MoreData, Pattern, SkipPattern).

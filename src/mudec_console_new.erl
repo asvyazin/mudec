@@ -2,13 +2,17 @@
 
 -author('Alexander Svyazin <guybrush@live.ru>').
 
--export([connect/2, read_input_loop/1, read_network_loop/1]).
+-export([connect/2, connect/3, read_input_loop/1, read_network_loop/1]).
 
 -include("telnet.hrl").
 
--spec connect(inet:ip_address() | inet:hostname(), inet:port_number()) -> any().
+-spec connect(Address :: tcp_network_proxy:address(), Port :: inet:port_number()) -> any().
 connect(Address, Port) ->
-    {ok, Pid} = mudec_telnet_connection:start_link(Address, Port),
+    connect(Address, Port, []).
+
+-spec connect(Address :: tcp_network_proxy:address(), Port :: inet:port_number(), Listeners :: list(pid())) -> any().
+connect(Address, Port, Listeners) ->
+    {ok, Pid} = mudec_telnet_connection:start_link(Address, Port, Listeners),
     spawn_link(?MODULE, read_input_loop, [Pid]),
     read_network_loop(Pid).
 

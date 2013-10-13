@@ -4,7 +4,7 @@
 
 -behaviour(gen_server).
 
--export([start_link/2, read_tokens/1, set_mode/2, get_mode/1, send/2]).
+-export([start_link/2, start_link/3, read_tokens/1, set_mode/2, get_mode/1, send/2]).
 -export_type([send_token/0, telnet_option/0, telnet_command/0, telnet_subnego_payload/0]).
 
 -type telnet_option() :: integer().
@@ -22,13 +22,16 @@
 
 -record(state, {socket :: inet:socket(), buffer :: string(), mode :: telnet_packet:mode()}).
 
--type address() :: inet:ip_address() | inet:hostname().
--spec start_link(Address :: address(), Port :: inet:port_number()) -> {ok, pid()}.
+-spec start_link(Address :: tcp_connection_proxy:address(), Port :: inet:port_number()) -> {ok, pid()}.
 start_link(Address, Port) ->
-    gen_server:start_link(?MODULE, [Address, Port], []).
+    start_link(Address, Port, []).
 
-init([Address, Port]) ->
-    {ok, Socket} = gen_tcp:connect(Address, Port, [{active, false}, {mode, list}]),
+-spec start_link(Address :: tcp_connection_proxy:address(), Port :: inet:port_number(), Listeners :: list(pid())) -> {ok, pid()}.
+start_link(Address, Port, Listeners) ->
+    gen_server:start_link(?MODULE, [Address, Port, Listeners], []).
+
+init([Address, Port, Listeners]) ->
+    {ok, Socket} = tcp_connection_proxy:start_link(Address, Port, Listeners),
     {ok, #state{socket = Socket, buffer = [], mode = newline}}.
 
 -spec read_tokens(pid()) -> {ok, list(mudec_telnet_reader:telnet_token())}.
@@ -62,7 +65,7 @@ handle_cast({set_mode, Mode}, #state{} = S) ->
     {noreply, S#state{mode = Mode}};
 handle_cast({send, Tokens}, #state{socket = Socket} = S) ->
     lager:debug("Sending ~p", [Tokens]),
-    ok = gen_tcp:send(Socket, mudec_telnet_writer:to_telnet(Tokens)),
+    ok = tcp_network_proxy:write_bytes(Socket, mudec_telnet_writer:to_telnet(Tokens)),
     {noreply, S};
 handle_cast({read_tokens_reply, From, Tokens, NewBuffer}, #state{} = S) ->
     gen_server:reply(From, {ok, Tokens}),
